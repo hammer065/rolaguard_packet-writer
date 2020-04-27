@@ -4,7 +4,7 @@
 
 This repository contains the source code of RoLaGuard packet-writer. This module receives messages in JSON format from Data Collectors queues in RabbitMQ and saves them to DB.
 
-To access the main project with instructions to easily run the rolaguard locally visit the [RoLaGuard](./../README.md) repository. For contributions, please visit the [CONTRIBUTIONS](./../CONTRIBUTING.MD) file.
+To access the main project with instructions to easily run the rolaguard locally visit the [RoLaGuard](https://github.com/Argeniss-Software/rolaguard) repository. For contributions, please visit the [CONTRIBUTIONS](https://github.com/Argeniss-Software/rolaguard/blob/master/CONTRIBUTIONS.md) file
 ​
 
 ## Saving raw messages
