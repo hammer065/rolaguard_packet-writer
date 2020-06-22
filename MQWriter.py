@@ -151,7 +151,8 @@ try:
     print("Starting PacketWriter")
     atexit.register(exit_handler)
     print("Initializing s3 manager")
-    if 'AWS_ACCESS_KEY_ID' in os.environ and 'AWS_SECRET_ACCESS_KEY' in os.environ:
+    if 'AWS_ACCESS_KEY_ID' in os.environ and len(os.environ['AWS_ACCESS_KEY_ID'])>0\
+         and 'AWS_SECRET_ACCESS_KEY' in os.environ and len(os.environ['AWS_SECRET_ACCESS_KEY'])>0:
         CollectorMessageManager = S3CollectorMessagesManager(aws_access_key=os.environ["AWS_ACCESS_KEY_ID"],
                                             aws_secret_key=os.environ["AWS_SECRET_ACCESS_KEY"],
                                             bucket_name=os.environ["AWS_COLLECTOR_MSGS_BUCKET"],
