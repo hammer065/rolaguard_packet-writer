@@ -122,8 +122,6 @@ def callback(ch, method, properties, body):
         logging.info('Rolling back the session')
         rollback()
 
-    logging.debug("Saved message: %s" % (message))
-
 
 def initialize_rabbit():
     rabbit_credentials = pika.PlainCredentials(os.environ["RABBITMQ_DEFAULT_USER"], os.environ["RABBITMQ_DEFAULT_PASS"])
