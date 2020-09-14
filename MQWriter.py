@@ -106,7 +106,8 @@ def callback(ch, method, properties, body):
         else:
             logging.debug("no messages present")
     except Exception as e:
-        logging.error(f"There was an error processing packet {body}. Exception: {e}")
+        logging.error(f"There was an error processing packet.\n{body}\n{e}")
+        rollback()
 
     try:
         logging.debug("Acknowledging the message")
