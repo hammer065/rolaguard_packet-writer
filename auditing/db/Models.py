@@ -160,21 +160,6 @@ class Device(Base):
     def find_by_organization_id_and_last_up(cls, organization_id, since, until):
         return session.query(cls).filter(cls.organization_id == organization_id).filter(cls.last_up_timestamp > since, cls.last_up_timestamp < until).all()
 
-    @classmethod
-    def find_one_by_dev_eui_and_join_eui_and_datacollector_id(cls, dev_eui, join_eui, data_collector_id):
-        query= session.query(cls).filter(cls.dev_eui == dev_eui, cls.join_eui == join_eui)
-        query = query.filter(cls.id == DataCollectorToDevice.device_id).filter(DataCollectorToDevice.data_collector_id == data_collector_id)
-        return query.first()
-
-    @classmethod
-    def find(cls, dev_eui, data_collector_id):
-        query = session.query(cls)
-        if data_collector_id:
-            query = query.filter(cls.id == DataCollectorToDevice.device_id).filter(DataCollectorToDevice.data_collector_id == data_collector_id)
-        if dev_eui:
-            query = query.filter(cls.dev_eui == dev_eui)
-        return query.all()
-
     
 class DevNonce(Base):
     __tablename__ = 'dev_nonce'
@@ -306,13 +291,6 @@ class DeviceSession(Base):
             else:
                 self.last_down_timestamp = timestamp
 
-    @classmethod
-    def find_one_by_dev_addr_and_datacollector_id(cls, dev_addr, data_collector_id):
-        query = session.query(cls).filter(cls.dev_addr == dev_addr)
-       
-        query = query.filter(cls.id == DataCollectorToDeviceSession.device_session_id).filter(DataCollectorToDeviceSession.data_collector_id == data_collector_id)
-
-        return query.first()
 
 
 class Packet(Base):
@@ -516,32 +494,6 @@ class RowProcessed(Base):
         session.add(self)
         session.flush()
 
-
-class DataCollectorToDevice(Base):
-    __tablename__ = 'data_collector_to_device'
-    data_collector_id = Column(BigIntegerType, ForeignKey("data_collector.id"), nullable=False, primary_key=True)
-    device_id = Column(BigIntegerType, ForeignKey("device.id"), nullable=False, primary_key=True)
-
-    def save(self):
-        session.add(self)
-        session.flush()
-
-    @classmethod
-    def find_one_by_data_collector_id_and_device_id(cls, data_collector_id, device_id):
-        return session.query(cls).filter(cls.data_collector_id == data_collector_id, cls.device_id == device_id).first()
-
-class DataCollectorToDeviceSession(Base):
-    __tablename__ = 'data_collector_to_device_session'
-    data_collector_id = Column(BigIntegerType, ForeignKey("data_collector.id"), nullable=False, primary_key=True)
-    device_session_id = Column(BigIntegerType, ForeignKey("device_session.id"), nullable=False, primary_key=True)
-
-    def save(self):
-        session.add(self)
-        session.flush()
-    
-    @classmethod
-    def find_one_by_data_collector_id_and_device_session_id(cls, data_collector_id, device_session_id):
-        return session.query(cls).filter(cls.data_collector_id == data_collector_id, cls.device_session_id == device_session_id).first()
 
 class Organization(Base):
     __tablename__ = "organization"

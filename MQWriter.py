@@ -106,7 +106,8 @@ def callback(ch, method, properties, body):
         else:
             logging.debug("no messages present")
     except Exception as e:
-        logging.error(f"There was an error processing packet {body}. Exception: {e}")
+        logging.error(f"There was an error processing packet.\n{body}\n{e}")
+        rollback()
 
     try:
         logging.debug("Acknowledging the message")
@@ -121,8 +122,6 @@ def callback(ch, method, properties, body):
         logging.error(f'Error at commit: {exc}')
         logging.info('Rolling back the session')
         rollback()
-
-    logging.debug("Saved message: %s" % (message))
 
 
 def initialize_rabbit():
