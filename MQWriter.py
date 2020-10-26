@@ -156,8 +156,8 @@ try:
                                             aws_secret_key=os.environ["AWS_SECRET_ACCESS_KEY"],
                                             bucket_name=os.environ["AWS_COLLECTOR_MSGS_BUCKET"],
                                             logger=logging.getLogger())
-    else:
-        CollectorMessageManager = LogCollectorMessagesManager(logger=logging.getLogger())
+    # else:
+    #     CollectorMessageManager = LogCollectorMessagesManager(logger=logging.getLogger())
     print("Initializing rabbit connection")
     initialize_rabbit()
 except Exception as e:
