@@ -34,6 +34,7 @@ BATCH_LENGHT = 64
 write_queue = []
 
 def callback(ch, method, properties, body):
+    global write_queue
     try:
         message = body.decode("utf-8")
         # Parse the JSON into a dict
