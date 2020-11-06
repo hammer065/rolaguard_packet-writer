@@ -89,6 +89,7 @@ def callback(ch, method, properties, body):
                 write_queue.append(packet)
             else:
                 engine.execute(Packet.__table__.insert(), write_queue)
+                write_queue = []
                 session.commit()
 
         
