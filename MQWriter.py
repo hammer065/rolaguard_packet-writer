@@ -99,7 +99,7 @@ def callback(ch, method, properties, body):
             save_messages(messages, messages[0].get('data_collector_id'), None)
     except Exception as e:
         logging.error(f"There was an error processing packet:\n{e}")
-        write_queue = write_queue[0:-1]
+        write_queue = []
         session.rollback()
 
     try:
