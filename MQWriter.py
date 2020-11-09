@@ -31,6 +31,7 @@ def save_messages(messages, data_collector_id, packet_id):
 
 
 BATCH_LENGHT = 64
+DATA_MAX_LEN = 300
 write_queue = []
 
 def callback(ch, method, properties, body):
@@ -63,7 +64,7 @@ def callback(ch, method, properties, body):
                     lsnr=packet.get('lsnr', None),
                     rssi=packet.get('rssi', None),
                     size=packet.get('size', None),
-                    data=packet.get('data', None),
+                    data=packet.get('data', None)[0:DATA_MAX_LEN],
                     m_type=packet.get('m_type', None),
                     major=packet.get('major', None),
                     mic=packet.get('mic', None),
@@ -98,6 +99,7 @@ def callback(ch, method, properties, body):
             save_messages(messages, messages[0].get('data_collector_id'), None)
     except Exception as e:
         logging.error(f"There was an error processing packet:\n{e}")
+        write_queue = write_queue[0:-1]
         session.rollback()
 
     try:
