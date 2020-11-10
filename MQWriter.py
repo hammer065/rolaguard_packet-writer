@@ -135,6 +135,7 @@ try:
     # else:
     #     CollectorMessageManager = LogCollectorMessagesManager(logger=logging.getLogger())
 
+
     print("Initializing rabbit connection")
     rabbit_credentials = pika.PlainCredentials(os.environ["RABBITMQ_DEFAULT_USER"], os.environ["RABBITMQ_DEFAULT_PASS"])
     connection = pika.BlockingConnection(
