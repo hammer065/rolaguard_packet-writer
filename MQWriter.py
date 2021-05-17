@@ -1,6 +1,6 @@
 import atexit
 
-import pika, os, logging, json
+import pika, os, logging, json, signal
 import dateutil.parser as dp
 
 from S3CollectorMessagesManager import S3CollectorMessagesManager
@@ -29,10 +29,19 @@ def save_messages(messages, data_collector_id, packet_id):
             message['packet_id'] = packet_id
         CollectorMessageManager.save_collector_messages(data_collector_id, messages)
 
-
 BATCH_LENGHT = 64
 DATA_MAX_LEN = 300
+WRITE_TIMEOUT = 10
 write_queue = []
+
+
+def timeout_writer(signum, frame):
+    global write_queue
+    if len(write_queue) != 0:
+        engine.execute(Packet.__table__.insert(), write_queue)
+        write_queue = []
+        session.commit()
+
 
 def callback(ch, method, properties, body):
     global write_queue
@@ -44,56 +53,58 @@ def callback(ch, method, properties, body):
         # This packet is a JSON object
         packet = data.get('packet')
         messages = data.get('messages')
-        
-        if packet:
-            if len(write_queue) < BATCH_LENGHT:
-                packet = dict(
-                    date=dp.parse(packet.get('date', None)),
-                    topic=packet.get('topic', None),
-                    data_collector_id=packet.get('data_collector_id', None),
-                    organization_id=packet.get('organization_id', None),
-                    gateway=packet.get('gateway', None),
-                    tmst=packet.get('tmst', None),
-                    chan=packet.get('chan', None),
-                    rfch=packet.get('rfch', None),
-                    freq=packet.get('freq', None),
-                    stat=packet.get('stat', None),
-                    modu=packet.get('modu', None),
-                    datr=packet.get('datr', None),
-                    codr=packet.get('codr', None),
-                    lsnr=packet.get('lsnr', None),
-                    rssi=packet.get('rssi', None),
-                    size=packet.get('size', None),
-                    data=packet['data'][0:DATA_MAX_LEN] if 'data' in packet else None,
-                    m_type=packet.get('m_type', None),
-                    major=packet.get('major', None),
-                    mic=packet.get('mic', None),
-                    join_eui=packet.get('join_eui', None),
-                    dev_eui=packet.get('dev_eui', None),
-                    dev_nonce=packet.get('dev_nonce', None),
-                    dev_addr=packet.get('dev_addr', None),
-                    adr=packet.get('adr', None),
-                    ack=packet.get('ack', None),
-                    adr_ack_req=packet.get('adr_ack_req', None),
-                    f_pending=packet.get('f_pending', None),
-                    class_b=packet.get('class_b', None),
-                    f_count=packet.get('f_count', None),
-                    f_opts=packet.get('f_opts', None),
-                    f_port=packet.get('f_port', None),
-                    error=packet['error'][0:DATA_MAX_LEN] if 'error' in packet else None,
-                    latitude=packet.get('latitude', None),
-                    longitude=packet.get('longitude', None),
-                    altitude=packet.get('altitude', None),
-                    app_name=packet.get('app_name', None),
-                    dev_name=packet.get('dev_name', None),
-                    gw_name=packet.get('gw_name', None)
-                    )
-                write_queue.append(packet)
-            else:
-                engine.execute(Packet.__table__.insert(), write_queue)
-                write_queue = []
-                session.commit()
 
+        if packet:
+            packet = dict(
+                date=dp.parse(packet.get('date', None)),
+                topic=packet.get('topic', None),
+                data_collector_id=packet.get('data_collector_id', None),
+                organization_id=packet.get('organization_id', None),
+                gateway=packet.get('gateway', None),
+                tmst=packet.get('tmst', None),
+                chan=packet.get('chan', None),
+                rfch=packet.get('rfch', None),
+                freq=packet.get('freq', None),
+                stat=packet.get('stat', None),
+                modu=packet.get('modu', None),
+                datr=packet.get('datr', None),
+                codr=packet.get('codr', None),
+                lsnr=packet.get('lsnr', None),
+                rssi=packet.get('rssi', None),
+                size=packet.get('size', None),
+                data=packet['data'][0:DATA_MAX_LEN] if 'data' in packet else None,
+                m_type=packet.get('m_type', None),
+                major=packet.get('major', None),
+                mic=packet.get('mic', None),
+                join_eui=packet.get('join_eui', None),
+                dev_eui=packet.get('dev_eui', None),
+                dev_nonce=packet.get('dev_nonce', None),
+                dev_addr=packet.get('dev_addr', None),
+                adr=packet.get('adr', None),
+                ack=packet.get('ack', None),
+                adr_ack_req=packet.get('adr_ack_req', None),
+                f_pending=packet.get('f_pending', None),
+                class_b=packet.get('class_b', None),
+                f_count=packet.get('f_count', None),
+                f_opts=packet.get('f_opts', None),
+                f_port=packet.get('f_port', None),
+                error=packet['error'][0:DATA_MAX_LEN] if 'error' in packet else None,
+                latitude=packet.get('latitude', None),
+                longitude=packet.get('longitude', None),
+                altitude=packet.get('altitude', None),
+                app_name=packet.get('app_name', None),
+                dev_name=packet.get('dev_name', None),
+                gw_name=packet.get('gw_name', None)
+                )
+            write_queue.append(packet)
+            signal.signal(signal.SIGALRM, timeout_writer)
+            signal.alarm(WRITE_TIMEOUT)
+            
+        if len(write_queue) >= BATCH_LENGHT:
+            signal.alarm(0)
+            engine.execute(Packet.__table__.insert(), write_queue)
+            write_queue = []
+            session.commit()
         
         if messages and len(messages) > 0:
             save_messages(messages, messages[0].get('data_collector_id'), None)
