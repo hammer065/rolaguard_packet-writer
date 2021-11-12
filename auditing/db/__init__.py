@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
+import logging
+import time
 
 if "ENVIRONMENT" not in os.environ:
     DB_HOST = "localhost"
@@ -22,3 +24,11 @@ Base = declarative_base()
 sessionBuilder = sessionmaker()
 sessionBuilder.configure(bind=engine)
 session = sessionBuilder()
+
+while True:
+    try:
+        engine.connect()
+        break
+    except Exception as exc:
+        logging.warning("Couldn't connect with postgres. Retrying connection.")
+        time.sleep(1)

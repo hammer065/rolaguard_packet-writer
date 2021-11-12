@@ -4,6 +4,7 @@ import pika, os, logging, json, signal
 import dateutil.parser as dp
 
 from S3CollectorMessagesManager import S3CollectorMessagesManager
+import auditing.db
 from auditing.db import engine, session
 from auditing.db.Models import Packet
 
