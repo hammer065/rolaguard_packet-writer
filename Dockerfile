@@ -1,19 +1,21 @@
-FROM python:3.6.10-slim-buster
+FROM python:3.6-slim-buster
 
 # Set the working directory to /app
 WORKDIR /root/app
-ENV PYTHONPATH="/root/app"
 
 # Copy the current directory contents into the container at /app
-COPY . /root/app/
+COPY ./requirements.txt ./
 
 # Install any needed packages specified in requirements.txt
-RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install --upgrade pip \
+  && pip install --upgrade --trusted-host pypi.python.org --no-cache-dir --timeout 1900 -r requirements.txt \
+  && find /usr/local/ \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -delete \
+  && apt-get clean autoclean \
+  && apt-get autopurge -y \
+  && rm -rf /var/lib/apt/lists/*
 
-# Redirect python command to python3
-#RUN rm /usr/bin/python
-#RUN ln -s /usr/bin/python3 /usr/bin/python
+COPY . .
 
-WORKDIR /root/app
+ENV PYTHONPATH="/root/app"
 
 ENTRYPOINT python3 MQWriter.py
